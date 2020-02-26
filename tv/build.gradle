@@ -3,6 +3,8 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.android.gms.oss-licenses-plugin'
+apply plugin: 'com.google.gms.google-services'
 apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
@@ -17,7 +19,6 @@ def getCurrentFlavor() {
 }
 
 android {
-    buildToolsVersion rootProject.buildToolsVersion
     compileSdkVersion rootProject.compileSdkVersion
     defaultConfig {
         applicationId "com.github.shadowsocks.tv"
@@ -51,7 +52,6 @@ android {
     }
     buildTypes {
         debug {
-            multiDexEnabled true
             pseudoLocalesEnabled true
         }
         release {
@@ -61,7 +61,13 @@ android {
             signingConfig signingConfigs.config
         }
     }
-    lintOptions.checkReleaseBuilds false
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility javaVersion
+        targetCompatibility javaVersion
+    }
+    kotlinOptions.jvmTarget = javaVersion
+    packagingOptions.exclude '**/*.kotlin_*'
     splits {
         abi {
             enable true
@@ -73,12 +79,11 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarLibsVersion"
     implementation project(':core')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "androidx.leanback:leanback-preference:1.1.0-alpha01"
+    implementation 'androidx.leanback:leanback-preference:1.1.0-alpha03'
 }
-
-apply plugin: 'com.google.gms.google-services'
 
 ext.abiCodes = ['armeabi-v7a': 1, 'arm64-v8a': 2, x86: 3, x86_64: 4]
 if (getCurrentFlavor() == 'release') android.applicationVariants.all { variant ->
